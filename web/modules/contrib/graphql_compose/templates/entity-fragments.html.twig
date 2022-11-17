@@ -1,0 +1,28 @@
+{% if showWrappers %}
+<pre><code>
+{% endif %}
+{% for key, entity in entities %}
+fragment {{ entity.type_sdl }} on {{ entity.type_sdl }} {
+{% for key, field in entity.fields %}
+{% if field.fragment.isFragment %}
+{% if field.fragment.isMultiple %}
+  {{ field.name_sdl }} {
+{% for fragment in field.fragment.type_sdl %}
+    ...{{ fragment }}
+{% endfor %}
+  }
+{% else %}
+  {{ field.name_sdl }} { 
+    ...{{ field.fragment.type_sdl }} 
+  }
+{% endif %}
+{% else %}
+  {{ field.name_sdl }}
+{% endif %}
+{% endfor %}
+}
+
+{% endfor %}
+{% if showWrappers %}
+</code></pre>
+{% endif %}

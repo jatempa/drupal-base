@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function graphql_compose_theme($existing, $type, $theme, $path)
+{
+  return [
+    'entity_fragments' => [
+      'variables' => [
+        'entities' => NULL,
+        'showWrappers' => TRUE
+      ],
+    ],
+    'entity_base' => [
+      'variables' => ['entity' => NULL],
+    ],
+    'entity_extension' => [
+      'variables' => ['entity' => NULL],
+    ],
+    'entity_base_content' => [
+      'variables' => [
+        'entities' => NULL,
+      ],
+    ],
+    'entity_extension_content' => [
+      'variables' => [
+        'entities' => NULL,
+      ],
+    ],
+  ];
+}

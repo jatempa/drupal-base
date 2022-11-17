@@ -1,0 +1,353 @@
+################################################################################
+# The base GraphQL Compose schema                                              #
+#                                                                              #
+# This file contains the basis of the GraphQL Compose GraphQL API Schema. It   #
+# provides base types that can be used by individual GraphQL Compose features. #
+# Additionally it contains common interfaces for things such as pagination.    #
+#                                                                              #
+# Comments aimed at schema developers are prefixed with `#` and comments       #
+# exposed to schema consumers are contained in `"""`.                          #
+#                                                                              #
+# If you're new to GraphQL I recommend starting at: https://graphql.org/learn/ #
+################################################################################
+
+# The actual GraphQL schema
+schema {
+  query: Query
+
+  # mutation: Mutation
+  # subscription: Subscription
+
+}
+
+"""
+The schema's entry-point for queries. This acts as the public, top-level API
+from which all queries must start.
+"""
+type Query {
+  """
+  Get information about the currently authenticated user.
+
+  NULL if you're not authenticated.
+  """
+  viewer : Actor
+  """
+  Get information about the GraphQL Compose Server.
+  """
+  graphQLComposeInformation: GraphQLComposeInformation
+}
+
+# """
+# The schema's entry-point for subscriptions. This acts as the public, top-level
+# API from which all subscriptions must start.
+
+# A real-time process must be implemented and deployed to support subscriptions.
+# """
+# type Subscription
+
+################################################################################
+#                                Basic Types                                   #
+################################################################################
+"""
+A concrete fetchable type that is addressable by an id.
+"""
+interface Node {
+  id: ID!
+}
+
+"""
+A valid version 4 UUID
+"""
+# This should not be used for entity UUIDs which should use ID instead.
+# This can be used for user provided strings such as a clientMutationId.
+scalar UUIDv4
+
+"""
+An access role for a user
+
+Roles are used to assign groups of permissions to users on the platform.
+"""
+scalar UserRole
+
+"""
+A valid email address.
+"""
+scalar Email
+
+"""
+A valid URL
+"""
+scalar Url
+
+"""
+An HTML string
+
+Content of this type is deemed safe by the server for raw output given the
+origin and the context of its usage. The HTML can still contain scripts or style
+tags where the creating user had permission to input these.
+"""
+scalar Html
+
+"""
+A UNIX timestamp.
+
+The number of seconds since the Unix Epoch on January 1st, 1970 at UTC.
+"""
+scalar Timestamp
+
+"""
+A phone number.
+"""
+# For now we treat PhoneNumber as a special string but we may want to build it
+# out to a proper type containing an country code and local number separately.
+scalar PhoneNumber
+
+# @TODO: Add descriptions.
+scalar TimeZone
+# scalar Language
+
+type Language {
+  id: String
+  name: String
+  direction: String
+}
+
+"""
+A date and time.
+"""
+type DateTime {
+  """
+  The date and time as UNIX timestamp.
+  """
+  timestamp: Timestamp!
+}
+
+################################################################################
+#                             User/Actor Types                                 #
+################################################################################
+
+"""
+An actor is an entity that can perform actions and own content within GraphQL Compose.
+"""
+interface Actor implements Node {
+  """
+  The uuid of the Actor
+  """
+  id: ID!
+
+  """
+  The display name of the actor.
+  """
+  displayName: String!
+}
+
+"""
+The status of a user on a platform.
+"""
+enum UserStatus {
+  """
+  An active user is able to login on the platform and view content
+  """
+  ACTIVE
+  """
+  A blocked user is unable to access the platform, although their content will
+  still be visible until it's deleted.
+  """
+  BLOCKED
+}
+
+################################################################################
+#                         Data Fetching Interfaces                             #
+#                                                                              #
+# All data fetching operations in GraphQL Compose should implement the Relay   #
+# Connection specification: https://relay.dev/graphql/connections.htm          #
+################################################################################
+"""
+A cursor for use in pagination.
+"""
+scalar Cursor
+
+"""
+An edge in a connection.
+
+Provides the cursor to fetch data based on the position of the associated node.
+Specific edge implementations may provide more information about the
+relationship they represent.
+"""
+interface Edge {
+  cursor: Cursor!
+  node: Node!
+}
+
+# PageInfo deviates from the current Relay spec as in the spec the
+# start-/endCursor fields may not be null. However, this is impractical because
+# it does not account for empty results.
+# See: https://github.com/facebook/relay/pull/2655
+"""
+Information about the page in a connection.
+"""
+type PageInfo {
+  """
+  Whether there are more pages in this connection.
+  """
+  hasNextPage: Boolean!
+  """
+  Whether there  are previous pages in this connection.
+  """
+  hasPreviousPage: Boolean!
+  """
+  The cursor for the first element in this page
+  """
+  startCursor: Cursor
+  """
+  The cursor for the last element in this page
+  """
+  endCursor: Cursor
+}
+
+"""
+A paginated set of results.
+"""
+interface Connection {
+  """
+  The edges of this connection.
+  """
+  edges: [Edge!]!
+  """
+  The nodes of the edges of this connection.
+
+  Provides direct access to the nodes in case other edge information
+  isn't needed.
+  """
+  nodes: [Node!]!
+  """
+  Information to aid in pagination
+  """
+  pageInfo: PageInfo!
+}
+
+# ################################################################################
+# #                         Data Creation Interfaces                             #
+# ################################################################################
+# """
+# The base mutation type.
+# """
+# type Mutation
+
+"""
+A violation indicates an error in the GraphQL query or other incorrect
+circumstances such as missing permissions.
+"""
+scalar Violation
+
+"""
+The base GraphQL Response class
+"""
+interface Response {
+  errors: [Violation]
+}
+
+# ################################################################################
+# #                         Core Types GraphQL Compose                           #
+# ################################################################################
+
+type EntityTypes {
+  id: String!
+  types: [EntityType]
+}
+
+type EntityType {
+  id: String
+  type: String
+  typePlural: String
+  querySingular: String
+  queryPlural: String
+}
+
+type GraphQLComposeInformation {
+  name: String!
+  description: String!
+  fragments: String!
+  entityTypes: [EntityTypes]
+}
+
+type Link {
+  uri: String
+  link: String
+  title: String
+}
+
+type Image {
+  url: String
+  width: Int
+  height: Int
+  styles: [ImageStyle]
+}
+
+type ImageStyle {
+  style: String
+  url: String
+  width: Int
+  height: Int
+}
+
+type Text {
+  format: String
+  value: String
+  processed: String
+}
+
+type TextSummary {
+  format: String
+  value: String
+  summary: String
+  processed: String
+}
+
+# ################################################################################
+# #                         Custom Types GraphQL Compose                         #
+# ################################################################################
+
+# ################################################################################
+# #                                Metatag Module                                #
+# ################################################################################
+
+type MetaTagLinkAttributes {
+  rel: String
+  href: String
+}
+
+type MetaTagValueAttributes {
+  name: String
+  content: String
+}
+
+type MetaTagPropertyAttributes {
+  property: String
+  content: String
+}
+
+interface MetaTag {
+  tag: String
+}
+
+type MetaTagLink implements MetaTag {
+  tag: String
+  attributes: MetaTagLinkAttributes
+}
+
+type MetaTagValue implements MetaTag {
+  tag: String
+  attributes: MetaTagValueAttributes
+}
+
+type MetaTagProperty implements MetaTag {
+  tag: String
+  attributes: MetaTagPropertyAttributes
+}
+
+union MetaTagUnion = MetaTagLink | MetaTagValue | MetaTagProperty
+
+# ################################################################################
+# #                                Metatag Module                                #
+# ################################################################################

@@ -1,0 +1,3 @@
+services:
+  graphql_compose.datamanager:
+    class: Drupal\graphql_compose\DataManager

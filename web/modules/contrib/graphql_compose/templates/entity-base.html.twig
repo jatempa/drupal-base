@@ -1,0 +1,42 @@
+"""
+{{ entity.type_sdl }}
+@TODO Fix implements using the array of interfaces
+type {{ entity.type_sdl }}{% if entity.interface %} implements {{ entity.interface|join(" & ") }} {% endif %} {
+"""
+{% if entity.type_sdl == 'User' %}
+type {{ entity.type_sdl }} implements Node & Actor {
+{% else %}
+type {{ entity.type_sdl }} implements Node {
+{% endif %}
+
+{% for key, field in entity.fields %}
+    """
+    {{ field.description }}
+    """
+    {{ field.name_sdl }}: {% if field.isMultiple %}[{% endif %}{{ field.type_sdl }}{% if field.isMultiple %}]{% endif %}{% if field.isRequired %}!{% endif %}
+{% endfor %}
+}
+
+type {{ entity.type_sdl }}Edge implements Edge {
+    cursor: Cursor!
+    node: {{ entity.type_sdl }}!
+}
+
+type {{ entity.type_sdl }}Connection implements Connection {
+    edges: [{{ entity.type_sdl }}Edge!]!
+    nodes: [{{ entity.type_sdl }}!]!
+    pageInfo: PageInfo!
+}
+
+"""
+The set of valid sort keys for the {{ entity.type_sdl }} query.
+@TODO pass SortKeys when rendering twig template
+"""
+enum {{ entity.type_sdl }}SortKeys {
+    """@Sort by event creation date"""
+    CREATED_AT
+}
+
+{% for key, union in entity.unions %}
+union {{ key }} = {{ union.mapping|join(' | ') }}
+{% endfor %}

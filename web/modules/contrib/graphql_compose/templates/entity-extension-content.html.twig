@@ -1,0 +1,6 @@
+extend type Query {
+  """
+  Fetch Content Node data using URL
+  """
+  nodeByPath(path: String!): NodeContentUnion
+}

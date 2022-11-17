@@ -21,6 +21,7 @@
         "drupal/core-project-message": "^9.4",
         "drupal/core-recommended": "^9.4",
         "drupal/devel": "^5.0",
+        "drupal/graphql_compose": "^1.0@beta",
         "drupal/jsonapi_extras": "^3.21",
         "drupal/pathauto": "^1.11",
         "drupal/typed_data": "^1.0@beta",
